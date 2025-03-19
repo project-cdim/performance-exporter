@@ -1,0 +1,34 @@
+# The value of each property: true to retrieve, false not to retrieve
+deviceEnabled: true
+status:
+  state: true
+  health: true
+powerState: true
+powerCapability: true
+LTSSMState: true
+networkInterfaceInformation:
+  networkSpeed: false
+  networkTraffic:
+    receivePackets: false
+    transmitPackets: false
+    bytesSent: false
+    bytesRecv: false
+    errin: false
+    errout: false
+    dropin: false
+    dropout: false
+metricsCPUCorePercent: false
+metricsHostBusRXPercent: false
+metricsHostBusTXPercent: false
+metricsRXAvgQueueDepthPercent: false
+metricsTXAvgQueueDepthPercent: false
+metricsRXBytes: false
+metricsRXFrames: false
+metricsTXBytes: false
+metricsTXFrames: false
+metricEnergyJoules:
+  sensorResetTime: false
+  sensingInterval: false
+  readingTime: false
+  reading: false
+

@@ -1,0 +1,28 @@
+# The value of each property: true to retrieve, false not to retrieve
+enabled: false
+status:
+  state: false
+  health: false
+powerState: false
+powerCapability: false
+LTSSMState: false
+CXLCapacity:
+  volatile: false
+  persistent: false
+  total: false
+usedMemory: false
+swap: false
+metricBandwidthPercent: false
+metricBlockSizeBytes: false
+metricOperatingSpeedMHz: false
+metricHealthData:
+  dataLossDetected: false
+  lastShutdownSuccess: false
+  performanceDegraded: false
+  predictedMediaLifeLeftPercent: false
+metricEnergyJoules:
+  sensorResetTime: false
+  sensingInterval: false
+  readingTime: false
+  reading: false
+  

@@ -1,0 +1,49 @@
+{
+    "deviceID": "0001",
+    "idle": null,
+    "CPUWatts": null,
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": null,
+    "metricBandwidthPercent": null,
+    "metricCash": [
+        {
+            "cacheMiss": null,
+            "cacheMissesPerInstruction": null,
+            "hitRatio": null,
+            "occupancyBytes": null,
+            "occupancyPercent": null
+        }
+    ],
+    "metricCoreMetrics": [
+        {
+            "coreCache": [
+                {
+                    "occupancyBytes": null,
+                    "occupancyPercent": null
+                }
+            ],
+            "coreId": null,
+            "instructionsPerCycle": null
+        }
+    ],
+    "metricEnergyJoules": {
+        "reading": null,
+        "readingTime": null,
+        "sensingInterval": null,
+        "sensorResetTime": null
+    },
+    "metricLocalMemoryBandwidthBytes": null,
+    "metricOperatingSpeedMHz": null,
+    "metricRemoteMemoryBandwidthBytes": null,
+    "powerCapability": null,
+    "powerState": null,
+    "status": {
+        "health": null,
+        "state": null
+    },
+    "system": null,
+    "type": "CPU",
+    "usageRate": null,
+    "user": null,
+    "wait": null
+}

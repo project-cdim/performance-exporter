@@ -1,0 +1,42 @@
+# The value of each property: true to retrieve, false not to retrieve
+volumeCapacity: 
+  data: 
+    allocatedBytes: false
+    consumedBytes: false
+    guaranteedBytes: false
+    provisionedBytes: false
+  metadata: 
+    allocatedBytes: false
+    consumedBytes: false
+    guaranteedBytes: false
+    provisionedBytes: false
+  snapshot: 
+    allocatedBytes: false
+    consumedBytes: false
+    guaranteedBytes: false
+    provisionedBytes: false
+volumeRemainingCapacityPercent: false
+driveNegotiatedSpeedGbs: false
+status:
+  state: false
+  health: false
+powerState: false
+powerCapability: false
+LTSSMState: false
+disk:
+  amountUsedDisk: false
+  usageIO:
+    readCount: false
+    writeCount: false
+    readBytes: false
+    writeBytes: false
+    readTime: false
+    writeTime: false
+    readMergedCount: false
+    writeMergedCount: false
+    busyRate: false
+metricEnergyJoules:
+  sensorResetTime: false
+  sensingInterval: false
+  readingTime: false
+  reading: false

@@ -1,0 +1,39 @@
+{
+    "attribute": {
+        "divide": "true",
+        "persistent": "true"
+    },
+    "CXLCapacity": {
+        "volatile": 1073741824,
+        "persistent": 0,
+        "total": 1073741824
+    },
+    "deviceID": "1001",
+    "enabled": "true",
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": "L0",
+    "metricBandwidthPercent": 57.3,
+    "metricBlockSizeBytes": 57.4,
+    "metricEnergyJoules": {
+        "reading": 57.8,
+        "readingTime": "2023-02-13T04:14:00Z",
+        "sensingInterval": 57.7,
+        "sensorResetTime": "2020-06-03T04:14:00Z"
+    },
+    "metricHealthData": {
+        "dataLossDetected": "false",
+        "lastShutdownSuccess": "true",
+        "performanceDegraded": "false",
+        "predictedMediaLifeLeftPercent": 57.6
+    },
+    "metricOperatingSpeedMHz": 57.5,
+    "powerCapability": "true",
+    "powerState": "On",
+    "status": {
+        "health": "OK",
+        "state": "Enabled"
+    },
+    "swap": 57.2,
+    "type": "memory",
+    "usedMemory": 57.1
+}

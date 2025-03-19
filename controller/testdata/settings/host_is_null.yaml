@@ -1,0 +1,3 @@
+collect_configs:
+  target_host: 
+  timeout: 10

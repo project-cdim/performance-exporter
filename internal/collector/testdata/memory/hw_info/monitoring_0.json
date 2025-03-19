@@ -1,0 +1,18 @@
+{
+  "deviceID": "1001",
+    "type": "memory",
+    "enabled": false,
+    "status": {
+      "state": "Warning",
+      "health": "Disabled"
+    },
+    "powerState": "Off",
+    "powerCapability": false,
+    "LTSSMState": "L1",
+    "metricHealthData": {
+      "dataLossDetected": false,
+      "lastShutdownSuccess": false,
+      "performanceDegraded": false
+    },
+    "infoTimestamp": "2023-10-01T00:00:00Z"
+  }

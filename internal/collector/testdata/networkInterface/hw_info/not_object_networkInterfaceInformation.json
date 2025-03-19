@@ -1,0 +1,29 @@
+{
+    "deviceEnabled": true,
+    "deviceID": "3001",
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": "L0",
+    "metricEnergyJoules": {
+        "reading": 268,
+        "readingTime": "2023-02-13T04:14:00Z",
+        "sensingInterval": 645,
+        "sensorResetTime": "2020-06-03T04:14:00Z"
+    },
+    "metricsCPUCorePercent": 87,
+    "metricsHostBusRXPercent": 57,
+    "metricsHostBusTXPercent": 55,
+    "metricsRXAvgQueueDepthPercent": 53,
+    "metricsRXBytes": 7854480311,
+    "metricsRXFrames": 25819486,
+    "metricsTXAvgQueueDepthPercent": 16,
+    "metricsTXBytes": 9435020620,
+    "metricsTXFrames": 17842129,
+    "networkInterfaceInformation": 55,
+    "powerCapability": true,
+    "powerState": "On",
+    "status": {
+        "health": "OK",
+        "state": "Enabled"
+    },
+    "type": "networkInterface"
+}

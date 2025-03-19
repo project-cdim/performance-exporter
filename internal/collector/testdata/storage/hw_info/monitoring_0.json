@@ -1,0 +1,12 @@
+{
+    "deviceID": "2001",
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": "L1",
+    "powerCapability": false,
+    "powerState": "Off",
+    "status": {
+        "health": "Warning",
+        "state": "Disabled"
+    },
+    "type": "storage"
+}

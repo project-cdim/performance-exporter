@@ -1,0 +1,40 @@
+{
+    "deviceID": "2001",
+    "driveNegotiatedSpeedGbs": null,
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": null,
+    "metricEnergyJoules": {
+        "reading": null,
+        "readingTime": null,
+        "sensingInterval": null,
+        "sensorResetTime": null
+    },
+    "powerCapability": null,
+    "powerState": null,
+    "status": {
+        "health": null,
+        "state": null
+    },
+    "type": "storage",
+    "volumeCapacity": {
+        "data": {
+            "allocatedBytes": null,
+            "consumedBytes": null,
+            "guaranteedBytes": null,
+            "provisionedBytes": null
+        },
+        "metadata": {
+            "allocatedBytes": null,
+            "consumedBytes": null,
+            "guaranteedBytes": null,
+            "provisionedBytes": null
+        },
+        "snapshot": {
+            "allocatedBytes": null,
+            "consumedBytes": null,
+            "guaranteedBytes": null,
+            "provisionedBytes": null
+        }
+    },
+    "volumeRemainingCapacityPercent": null
+}

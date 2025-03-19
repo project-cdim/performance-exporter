@@ -1,0 +1,41 @@
+{
+    "deviceEnabled": null,
+    "deviceID": "3001",
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": null,
+    "metricEnergyJoules": {
+        "reading": null,
+        "readingTime": null,
+        "sensingInterval": null,
+        "sensorResetTime": null
+    },
+    "metricsCPUCorePercent": null,
+    "metricsHostBusRXPercent": null,
+    "metricsHostBusTXPercent": null,
+    "metricsRXAvgQueueDepthPercent": null,
+    "metricsRXBytes": null,
+    "metricsRXFrames": null,
+    "metricsTXAvgQueueDepthPercent": null,
+    "metricsTXBytes": null,
+    "metricsTXFrames": null,
+    "networkInterfaceInformation": {
+        "networkSpeed": null,
+        "networkTraffic": {
+            "bytesRecv": null,
+            "bytesSent": null,
+            "dropin": null,
+            "dropout": null,
+            "errin": null,
+            "errout": null,
+            "receivePackets": null,
+            "transmitPackets": null
+        }
+    },
+    "powerCapability": null,
+    "powerState": null,
+    "status": {
+        "health": null,
+        "state": null
+    },
+    "type": "networkInterface"
+}

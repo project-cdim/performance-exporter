@@ -1,0 +1,35 @@
+{
+    "deviceID": "1001",
+    "type": "memory",
+    "enabled": null,
+    "status": {
+      "state": null,
+      "health": null
+    },
+    "powerState": null,
+    "powerCapability": null,
+    "LTSSMState": null,
+    "CXLCapacity": {
+      "volatile": null,
+      "persistent": null,
+      "total": null
+    },
+    "usedMemory": null,
+    "swap": null,
+    "metricBandwidthPercent": null,
+    "metricBlockSizeBytes": null,
+    "metricOperatingSpeedMHz": null,
+    "metricHealthData": {
+      "dataLossDetected": null,
+      "lastShutdownSuccess": null,
+      "performanceDegraded": null,
+      "predictedMediaLifeLeftPercent": null
+    },
+    "metricEnergyJoules": {
+      "sensorResetTime": null,
+      "sensingInterval": null,
+      "readingTime": null,
+      "reading": null
+    },
+    "infoTimestamp": "2023-10-01T00:00:00Z"
+  }

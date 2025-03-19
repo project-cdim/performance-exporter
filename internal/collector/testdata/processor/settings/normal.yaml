@@ -1,0 +1,24 @@
+# The value of each property: true to retrieve, false not to retrieve
+status:
+  state: true
+  health: true
+powerState: true
+powerCapability: true
+LTSSMState: true
+usageRate: true
+user: true
+system: true
+wait: true
+idle: true
+CPUWatts: true
+metricBandwidthPercent: true
+metricOperatingSpeedMHz: true
+# metricCache is excluded because it is an array.
+# metricCoreMetrics is excluded because it is an array.
+metricLocalMemoryBandwidthBytes: true
+metricRemoteMemoryBandwidthBytes: true
+metricEnergyJoules:
+  sensorResetTime: true
+  sensingInterval: true
+  readingTime: true
+  reading: true

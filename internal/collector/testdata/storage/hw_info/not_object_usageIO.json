@@ -1,0 +1,44 @@
+{
+    "deviceID": "2001",
+    "disk": {
+        "amountUsedDisk": 11206075840,
+        "usageIO": 55
+    },
+    "driveNegotiatedSpeedGbs": 11,
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "LTSSMState": "L0",
+    "metricEnergyJoules": {
+        "reading": 233,
+        "readingTime": "2023-02-13T04:14:00Z",
+        "sensingInterval": 546,
+        "sensorResetTime": "2020-06-03T04:14:00Z"
+    },
+    "powerCapability": true,
+    "powerState": "On",
+    "status": {
+        "health": "OK",
+        "state": "Enabled"
+    },
+    "type": "storage",
+    "volumeCapacity": {
+        "data": {
+            "allocatedBytes": 107322538,
+            "consumedBytes": 1114277,
+            "guaranteedBytes": 95691040,
+            "provisionedBytes": 99645567733
+        },
+        "metadata": {
+            "allocatedBytes": 104409843,
+            "consumedBytes": 1000,
+            "guaranteedBytes": 95866841,
+            "provisionedBytes": 117558446468
+        },
+        "snapshot": {
+            "allocatedBytes": 107767423,
+            "consumedBytes": 909,
+            "guaranteedBytes": 94389288,
+            "provisionedBytes": 112283329601
+        }
+    },
+    "volumeRemainingCapacityPercent": 34
+}
