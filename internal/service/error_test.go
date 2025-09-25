@@ -1,17 +1,17 @@
 // Copyright (C) 2025 NEC Corporation.
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-        
+
 package service
 
 import (
@@ -28,7 +28,7 @@ func TestCdimError_Error(t *testing.T) {
 		want string
 	}{
 		{
-			name: "nomal",
+			name: "normal",
 			gce:  &Error{StatusCode: 400, Code: "400", Message: "Bad Request"},
 			want: "http status code = 400, code = 400 message = Bad Request",
 		},
@@ -54,7 +54,7 @@ func TestCdimErrorNew(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "nomal",
+			name: "normal",
 			args: args{
 				statusCode: 400,
 				code:       "400",
@@ -82,7 +82,7 @@ func TestGetStatusCode(t *testing.T) {
 		want int
 	}{
 		{
-			name: "nomal",
+			name: "normal",
 			args: args{
 				err: &Error{StatusCode: 400, Code: "400", Message: "Bad Request"},
 			},
@@ -108,7 +108,7 @@ func TestToJson(t *testing.T) {
 		want gin.H
 	}{
 		{
-			name: "nomal",
+			name: "normal",
 			args: args{
 				err: &Error{StatusCode: 400, Code: "400", Message: "Bad Request"},
 			},

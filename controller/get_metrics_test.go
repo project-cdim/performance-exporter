@@ -1,17 +1,17 @@
 // Copyright (C) 2025 NEC Corporation.
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-        
+
 package controller
 
 import (
@@ -150,7 +150,7 @@ func Test_loadConfig(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"nomal",
+			"normal",
 			args{
 				settingsPath + "normal.yaml",
 				yamlContent,
@@ -290,63 +290,63 @@ func Test_dispatchMetricsHandler(t *testing.T) {
 	}{
 		// Pattern for obtaining HW control metric information. Confirm that panic does not occur
 		{
-			"nomal(type:CPU)",
+			"normal(type:CPU)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "CPU.json"),
 			},
 		},
 		{
-			"nomal(type:Accelerator)",
+			"normal(type:Accelerator)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "Accelerator.json"),
 			},
 		},
 		{
-			"nomal(type:DSP)",
+			"normal(type:DSP)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "DSP.json"),
 			},
 		},
 		{
-			"nomal(type:FPGA)",
+			"normal(type:FPGA)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "FPGA.json"),
 			},
 		},
 		{
-			"nomal(type:GPU)",
+			"normal(type:GPU)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "GPU.json"),
 			},
 		},
 		{
-			"nomal(type:UnknownProcessor)",
+			"normal(type:UnknownProcessor)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "UnknownProcessor.json"),
 			},
 		},
 		{
-			"nomal(type:memory)",
+			"normal(type:memory)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "memory.json"),
 			},
 		},
 		{
-			"nomal(type:storage)",
+			"normal(type:storage)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "storage.json"),
 			},
 		},
 		{
-			"nomal(type:networkInterface)",
+			"normal(type:networkInterface)",
 			args{
 				ginContext,
 				setHwMetric(hwInfoPath + "networkInterface.json"),
