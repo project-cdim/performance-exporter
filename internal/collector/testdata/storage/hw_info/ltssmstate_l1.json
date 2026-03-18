@@ -1,0 +1,52 @@
+{
+  "deviceID": "1001",
+  "capacityBytes": 1073741824000,
+  "enabled": true,
+  "infoTimestamp": "2023-10-20T07:15:39Z",
+  "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "L1",
+            "switchID": "2",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        }
+    ],
+  "metricEnergyJoules": {
+    "reading": 239,
+    "readingTime": "2023-02-13T04:14:00Z",
+    "sensingInterval": 599,
+    "sensorResetTime": "2020-06-03T04:14:00Z"
+  },
+  "powerCapability": true,
+  "powerState": "On",
+  "status": {
+    "health": "OK",
+    "state": "Enabled"
+  },
+  "type": "storage",
+  "usageIO": {
+    "readIOKiB": 2344,
+    "readIORequestRate": 234,
+    "writeIOKiB": 123,
+    "writeIORequestRate": 12
+  },
+  "usageRate": 45,
+  "volumeCapacity": {
+    "data": {
+      "guaranteedBytes": 1073741824000,
+      "allocatedBytes": 0,
+      "consumedBytes": 484270131200
+    },
+    "metadata": {
+      "guaranteedBytes": 0,
+      "allocatedBytes": 0,
+      "consumedBytes": 402
+    },
+    "snapshot": {
+      "guaranteedBytes": 0,
+      "allocatedBytes": 0,
+      "consumedBytes": 0
+    }
+  }
+}

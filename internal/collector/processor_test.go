@@ -1,4 +1,4 @@
-// Copyright (C) 2025 NEC Corporation.
+// Copyright (C) 2025-2026 NEC Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
@@ -26,6 +26,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
 
@@ -56,10 +57,40 @@ func setProcessorConfig(filepath string) model.ProcessorConfig {
 	return yamlContent
 }
 
-func createPocessorMetrics(hwOutput model.HwOutput, yamlContent model.ProcessorConfig) *processorMetrics {
+func createProcessorMetrics(hwOutput model.HwOutput, yamlContent model.ProcessorConfig) *processorMetrics {
 	reg := prometheus.NewRegistry()
 	m, _ := NewProcessorMetrics(reg, &hwOutput, &yamlContent)
 	return m
+}
+
+func createProcessorMetricsWithRegistry(hwOutput model.HwOutput, yamlContent model.ProcessorConfig) (*processorMetrics, *prometheus.Registry) {
+	reg := prometheus.NewRegistry()
+	m, _ := NewProcessorMetrics(reg, &hwOutput, &yamlContent)
+	return m, reg
+}
+
+func setProcessorConfigAllValue(value bool) model.ProcessorConfig {
+	settings := model.ProcessorConfig{}
+	settings.Status.State = value
+	settings.Status.Health = value
+	settings.PowerState = value
+	settings.PowerCapability = value
+	settings.DevicePortList.LTSSMState = value
+	settings.UsageRate = value
+	settings.User = value
+	settings.System = value
+	settings.Wait = value
+	settings.Idle = value
+	settings.CPUWatts = value
+	settings.MetricBandwidthPercent = value
+	settings.MetricOperatingSpeedMHz = value
+	settings.MetricLocalMemoryBandwidthBytes = value
+	settings.MetricRemoteMemoryBandwidthBytes = value
+	settings.MetricEnergyJoules.Reading = value
+	settings.MetricEnergyJoules.ReadingTime = value
+	settings.MetricEnergyJoules.SensingInterval = value
+	settings.MetricEnergyJoules.SensorResetTime = value
+	return settings
 }
 
 func TestNewProcessorMetrics(t *testing.T) {
@@ -143,7 +174,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"normal",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"normal.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -155,7 +186,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: All values in the configuration file are false",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"normal.json"),
 					setProcessorConfig(settingsPath+"all_false.yaml"),
 				),
@@ -167,7 +198,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: When the configuration file is for status monitoring",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"normal.json"),
 					setProcessorConfig(settingsPath+"status_monitoring.yaml"),
 				),
@@ -179,7 +210,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: If the configuration file is empty, treat all items as false",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"normal.json"),
 					setProcessorConfig(settingsPath+"empty.yaml"),
 				),
@@ -191,7 +222,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: If the configuration file does not exist, treat all items as false",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"normal.json"),
 					setProcessorConfig(settingsPath+"aaa.yaml"),
 				),
@@ -204,7 +235,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: No metrics in the performance part of the HW control JSON",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"not_exist_metrics.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -216,7 +247,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: The value of metrics in the performance part of the HW control JSON is null",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"is_null_metrics_value.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -228,7 +259,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: The liveness monitoring part of the HW control JSON. When prometheus side becomes 1",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"monitoring_1.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -240,7 +271,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Normal case: The liveness monitoring part of the HW control JSON. When prometheus side becomes 0",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"monitoring_0.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -252,7 +283,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Error case: Return an error if the data type of metrics value in the HW control JSON is different from expected",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"unexpected_data_type_usagerate.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -264,7 +295,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Error case: Return an error if the data type of status is not map[string]any",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"not_object_metricEnergyJoules.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -276,7 +307,7 @@ func Test_setProcessorMetrics(t *testing.T) {
 		{
 			"Error case: Return an error if the data type of metricEnergyJoules is not map[string]any",
 			args{
-				createPocessorMetrics(
+				createProcessorMetrics(
 					setHwMetric(hwInfoPath+"not_object_metricEnergyJoules.json"),
 					setProcessorConfig(settingsPath+"normal.yaml"),
 				),
@@ -394,26 +425,276 @@ func TestProcessorMetricsHandler(t *testing.T) {
 	}
 }
 
-func setProcessorConfigAllValue(value bool) model.ProcessorConfig {
-	settings := model.ProcessorConfig{}
-	settings.Status.State = value
-	settings.Status.Health = value
-	settings.PowerState = value
-	settings.PowerCapability = value
-	settings.LtssmState = value
-	settings.UsageRate = value
-	settings.User = value
-	settings.System = value
-	settings.Wait = value
-	settings.Idle = value
-	settings.CPUWatts = value
-	settings.MetricBandwidthPercent = value
-	settings.MetricOperatingSpeedMHz = value
-	settings.MetricLocalMemoryBandwidthBytes = value
-	settings.MetricRemoteMemoryBandwidthBytes = value
-	settings.MetricEnergyJoules.Reading = value
-	settings.MetricEnergyJoules.ReadingTime = value
-	settings.MetricEnergyJoules.SensingInterval = value
-	settings.MetricEnergyJoules.SensorResetTime = value
-	return settings
+func Test_setProcessorMetrics_Values(t *testing.T) {
+	const settingsPath = "testdata/processor/settings/"
+	const hwInfoPath = "testdata/processor/hw_info/"
+
+	t.Run("LTSSMState L0 should set value 1", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "normal.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					// switchPortNumber is optional, so not validated in this test
+					assert.NotEmpty(t, fabricId, "fabric_id label should not be empty")
+					assert.NotEmpty(t, switchId, "switch_id label should not be empty")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+}
+
+func Test_setProcessorMetrics_SwitchPortNumber(t *testing.T) {
+	const settingsPath = "testdata/processor/settings/"
+	const hwInfoPath = "testdata/processor/hw_info/"
+
+	t.Run("multiple switchPortNumber normal values should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "normal.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 2, "Should have two metrics")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.NotEmpty(t, fabricId, "fabric_id label should not be empty")
+					assert.NotEmpty(t, switchId, "switch_id label should not be empty")
+					assert.NotEmpty(t, switchPortNumber, "switch_port_number label should not be empty")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+
+	t.Run("switchPortNumber empty string should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchport_empty.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.Equal(t, "1", fabricId, "fabric_id should be 1")
+					assert.Equal(t, "fmsw-01", switchId, "switch_id should be fmsw-01")
+					assert.Equal(t, "", switchPortNumber, "switch_port_number should be empty string")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+
+	t.Run("switchPortNumber missing field should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchport_missing.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.Equal(t, "1", fabricId, "fabric_id should be 1")
+					assert.Equal(t, "fmsw-01", switchId, "switch_id should be fmsw-01")
+					assert.Equal(t, "", switchPortNumber, "switch_port_number should be empty string when field is missing")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+}
+
+func Test_setProcessorMetrics_ErrorHandling(t *testing.T) {
+	const settingsPath = "testdata/processor/settings/"
+	const hwInfoPath = "testdata/processor/hw_info/"
+
+	t.Run("switchID empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchid_empty.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when switchID is empty")
+		assert.Contains(t, err.Error(), "devicePortList_switchID", "Error message should contain devicePortList_switchID")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when switchID is empty")
+			}
+		}
+	})
+
+	t.Run("LTSSMState empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "ltssmstate_empty.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when LTSSMState is empty")
+		assert.Contains(t, err.Error(), "devicePortList_ltssmState", "Error message should contain devicePortList_ltssmState")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when LTSSMState is empty")
+			}
+		}
+	})
+
+	t.Run("fabricID empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "fabricid_empty.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when fabricID is empty")
+		assert.Contains(t, err.Error(), "devicePortList_fabricID", "Error message should contain devicePortList_fabricID")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when fabricID is empty")
+			}
+		}
+	})
+}
+
+func Test_setProcessorMetrics_LTSSMStateValues(t *testing.T) {
+	const settingsPath = "testdata/processor/settings/"
+	const hwInfoPath = "testdata/processor/hw_info/"
+
+	t.Run("LTSSMState non-L0 should set value 0", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "ltssmstate_l1.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 0.0, actualValue, "LTSSMState non-L0 should be 0")
+				}
+			}
+		}
+	})
+}
+
+func Test_setProcessorMetrics_BoundaryValues(t *testing.T) {
+	const settingsPath = "testdata/processor/settings/"
+	const hwInfoPath = "testdata/processor/hw_info/"
+
+	t.Run("empty devicePortList should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "deviceportlist_empty.json")
+		settings := setProcessorConfig(settingsPath + "normal.yaml")
+		m, gatherer := createProcessorMetricsWithRegistry(hwOutput, settings)
+
+		err := setProcessorMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics are generated for empty array
+		for _, gather := range gathers {
+			if gather.GetName() == "CPU_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics for empty devicePortList")
+			}
+		}
+	})
 }

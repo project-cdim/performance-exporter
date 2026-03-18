@@ -1,0 +1,57 @@
+{
+    "deviceID": "0001",
+    "idle": 56.4,
+    "CPUWatts": 428,
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "devicePortList": [
+        {
+            "fabricID": "",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-01",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        }
+    ],
+    "metricBandwidthPercent": 56.6,
+    "metricCash": [
+        {
+            "cacheMiss": 56.8,
+            "cacheMissesPerInstruction": 56.9,
+            "hitRatio": 56.11,
+            "occupancyBytes": 56.12,
+            "occupancyPercent": 56.13
+        }
+    ],
+    "metricCoreMetrics": [
+        {
+            "coreCache": [
+                {
+                    "occupancyBytes": 56.15,
+                    "occupancyPercent": 56.16
+                }
+            ],
+            "coreId": "core0",
+            "instructionsPerCycle": 56.14
+        }
+    ],
+    "metricEnergyJoules": {
+        "reading": 56.2,
+        "readingTime": "2023-02-13T04:14:00Z",
+        "sensingInterval": 56.19,
+        "sensorResetTime": "2020-06-03T04:14:00Z"
+    },
+    "metricLocalMemoryBandwidthBytes": 56.17,
+    "metricOperatingSpeedMHz": 56.7,
+    "metricRemoteMemoryBandwidthBytes": 56.18,
+    "powerCapability": true,
+    "powerState": "On",
+    "status": {
+        "health": "OK",
+        "state": "Enabled"
+    },
+    "system": 56.2,
+    "type": "CPU",
+    "usageRate": 56,
+    "user": 56.1,
+    "wait": 56.3
+}

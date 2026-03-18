@@ -16,7 +16,22 @@
     },
     "driveNegotiatedSpeedGbs": 11,
     "infoTimestamp": "2023-10-20T07:15:39Z",
-    "LTSSMState": "L0",
+    "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-01",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        },
+        {
+            "fabricID": "2",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-02",
+            "switchPortNumber": "2",
+            "switchPortType": "USP"
+        }
+    ],
     "metricEnergyJoules": {
         "reading": 233,
         "readingTime": "2023-02-13T04:14:00Z",

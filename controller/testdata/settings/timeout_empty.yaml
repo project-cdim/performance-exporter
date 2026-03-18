@@ -1,3 +1,2 @@
 collect_configs:
-  target_host: 'XXX.XXX.XXX.XXX:8080'
-  
+  target_host: "XXX.XXX.XXX.XXX:8080"

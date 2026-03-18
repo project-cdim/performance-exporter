@@ -1,17 +1,17 @@
-// Copyright (C) 2025 NEC Corporation.
-// 
+// Copyright (C) 2025-2026 NEC Corporation.
+//
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-        
+
 package collector
 
 import (
@@ -34,6 +34,8 @@ const (
 	networkInterfaceYamlFilePath string  = "configs/networkInterface.yaml"
 )
 
+var namespaceNetworkInterface = model.NetworkInterface
+
 // Definition of Metrics
 type networkInterfaceMetrics struct {
 	// deviceID is not registered as a metric because it uses the job name
@@ -44,9 +46,9 @@ type networkInterfaceMetrics struct {
 	statusStateEnabled prometheus.Gauge
 	statusHealthOk     prometheus.Gauge
 
-	powerStateOn        prometheus.Gauge
-	powerCapabilityTrue prometheus.Gauge
-	ltssmStateL0        prometheus.Gauge
+	powerStateOn               prometheus.Gauge
+	powerCapabilityTrue        prometheus.Gauge
+	devicePortListLtssmStateL0 *prometheus.GaugeVec
 
 	networkInterfaceInformationNetworkTrafficReceivePackets  prometheus.Gauge
 	networkInterfaceInformationNetworkTrafficTransmitPackets prometheus.Gauge
@@ -83,151 +85,152 @@ func NewNetworkInterfaceMetrics(reg prometheus.Registerer, hwOutput *model.HwOut
 		// attribute is not registered as a metric because it is a fixed value
 
 		deviceEnabled: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace:   model.NetworkInterface,
+			Namespace:   namespaceNetworkInterface,
 			Name:        "deviceEnabled",
 			Help:        "Indicates whether this network device function is enabled",
 			ConstLabels: prometheus.Labels{"value": "true"},
 		}),
 		statusStateEnabled: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace:   model.NetworkInterface,
+			Namespace:   namespaceNetworkInterface,
 			Name:        "status_state",
 			Help:        "Network status information. Resource status",
 			ConstLabels: prometheus.Labels{"value": "Enabled"},
 		}),
 		statusHealthOk: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace:   model.NetworkInterface,
+			Namespace:   namespaceNetworkInterface,
 			Name:        "status_health",
 			Help:        "Network status information. Resource health status",
 			ConstLabels: prometheus.Labels{"value": "OK"},
 		}),
 		powerStateOn: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace:   model.NetworkInterface,
+			Namespace:   namespaceNetworkInterface,
 			Name:        "powerState",
 			Help:        "Current power state of the network function.",
 			ConstLabels: prometheus.Labels{"value": "On"},
 		}),
 		powerCapabilityTrue: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace:   model.NetworkInterface,
+			Namespace:   namespaceNetworkInterface,
 			Name:        "powerCapability",
 			Help:        "Whether power control function is enabled",
 			ConstLabels: prometheus.Labels{"value": "true"},
 		}),
-		ltssmStateL0: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace:   model.NetworkInterface,
-			Name:        "LTSSMState",
+
+		devicePortListLtssmStateL0: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace:   namespaceNetworkInterface,
+			Name:        "devicePortList_LTSSMState",
 			Help:        "CXL device link state",
 			ConstLabels: prometheus.Labels{"value": "L0"},
-		}),
+		}, []string{"fabric_id", "switch_id", "switch_port_number"}),
 
 		networkInterfaceInformationNetworkSpeed: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkSpeed",
 			Help:      "Network speed of network statistics",
 		}),
 		networkInterfaceInformationNetworkTrafficReceivePackets: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_receivePackets",
 			Help:      "Number of received packets in network statistics",
 		}),
 		networkInterfaceInformationNetworkTrafficTransmitPackets: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_transmitPackets",
 			Help:      "Number of transmitted packets in network statistics",
 		}),
 		networkInterfaceInformationNetworkTrafficBytesSent: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_bytesSent",
 			Help:      "Number of bytes sent in network statistics (unit: bytes)",
 		}),
 		networkInterfaceInformationNetworkTrafficBytesRecv: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_bytesRecv",
 			Help:      "Number of bytes received in network statistics (unit: bytes)",
 		}),
 		networkInterfaceInformationNetworkTrafficErrin: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_errin",
 			Help:      "Total number of errors during reception in network statistics",
 		}),
 		networkInterfaceInformationNetworkTrafficErrout: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_errout",
 			Help:      "Total number of errors during transmission in network statistics",
 		}),
 		networkInterfaceInformationNetworkTrafficDropin: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_dropin",
 			Help:      "Total number of dropped received packets in network statistics",
 		}),
 		networkInterfaceInformationNetworkTrafficDropout: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "networkInterfaceInformation_networkTraffic_dropout",
 			Help:      "Total number of dropped transmitted packets in network statistics",
 		}),
 
 		metricsCPUCorePercent: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsCPUCorePercent",
 			Help:      "CPU core usage rate of the device (percentage)",
 		}),
 		metricsHostBusRXPercent: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsHostBusRXPercent",
 			Help:      "Host bus RX usage rate, such as PCIe (percentage)",
 		}),
 		metricsHostBusTXPercent: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsHostBusTXPercent",
 			Help:      "Host bus TX usage rate, such as PCIe (percentage)",
 		}),
 		metricsRXAvgQueueDepthPercent: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsRXAvgQueueDepthPercent",
 			Help:      "RX average queue depth.",
 		}),
 		metricsTXAvgQueueDepthPercent: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsTXAvgQueueDepthPercent",
 			Help:      "TX average queue depth.",
 		}),
 		metricsRXBytes: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsRXBytes",
 			Help:      "Total number of bytes received by the network function.",
 		}),
 		metricsRXFrames: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsRXFrames",
 			Help:      "Total number of frames received by the network function.",
 		}),
 		metricsTXBytes: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsTXBytes",
 			Help:      "Total number of bytes sent by the network function.",
 		}),
 		metricsTXFrames: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricsTXFrames",
 			Help:      "Total number of frames sent by the network function.",
 		}),
 
 		metricEnergyJoulesSensorResetTime: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricEnergyJoules_sensorResetTime",
 			Help:      "The date and time when the time property was last reset. (UTC)",
 		}),
 		metricEnergyJoulesSensingInterval: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricEnergyJoules_sensingInterval",
 			Help:      "Time interval between sensor readings (seconds)",
 		}),
 		metricEnergyJoulesReadingTime: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricEnergyJoules_readingTime",
 			Help:      "The date and time when the measurement was obtained from the sensor. (UTC)",
 		}),
 		metricEnergyJoulesReading: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: model.NetworkInterface,
+			Namespace: namespaceNetworkInterface,
 			Name:      "metricEnergyJoules_reading",
 			Help:      "Measurement of energy consumption (J)",
 		}),
@@ -261,8 +264,9 @@ func NewNetworkInterfaceMetrics(reg prometheus.Registerer, hwOutput *model.HwOut
 	if settings.PowerCapability && service.IsExistValue(hwOutput.HwMetrics, "powerCapability") {
 		reg.MustRegister(m.powerCapabilityTrue)
 	}
-	if settings.LtssmState && service.IsExistValue(hwOutput.HwMetrics, "LTSSMState") {
-		reg.MustRegister(m.ltssmStateL0)
+
+	if settings.DevicePortList.LTSSMState && service.IsExistValue(hwOutput.HwMetrics, "devicePortList") {
+		reg.MustRegister(m.devicePortListLtssmStateL0)
 	}
 
 	if service.IsExistValue(hwOutput.HwMetrics, "networkInterfaceInformation") {
@@ -429,16 +433,53 @@ func setNetworkInterfaceMetrics(m *networkInterfaceMetrics, hwOutput *model.HwOu
 			errorItems = append(errorItems, "powerCapability")
 		}
 	}
-	if settings.LtssmState && service.IsExistValue(hwOutput.HwMetrics, "LTSSMState") {
-		if ltssmState, ok := hwOutput.HwMetrics["LTSSMState"].(string); ok {
-			switch ltssmState {
-			case model.LtssmStateL0:
-				m.ltssmStateL0.Set(model.LtssmStateL0Value)
-			default:
-				m.ltssmStateL0.Set(model.LtssmStateOtherValue)
+
+	if settings.DevicePortList.LTSSMState && service.IsExistValue(hwOutput.HwMetrics, "devicePortList") {
+		if devicePortListRaw, ok := hwOutput.HwMetrics["devicePortList"].([]any); ok {
+			for _, portDataRaw := range devicePortListRaw {
+				if portDataMap, ok := portDataRaw.(map[string]any); ok {
+					fabricID := service.GetStringValue(portDataMap, "fabricID")
+					switchID := service.GetStringValue(portDataMap, "switchID")
+					switchPortNumber := service.GetStringValue(portDataMap, "switchPortNumber")
+					ltssmState := service.GetStringValue(portDataMap, "LTSSMState")
+
+					if fabricID == "" {
+						errorItems = append(errorItems, "devicePortList_fabricID")
+						continue
+					}
+
+					if switchID == "" {
+						errorItems = append(errorItems, "devicePortList_switchID")
+						continue
+					}
+
+					// switchPortNumber is processed as empty string even if it doesn't exist or is empty
+					// Continue without error
+
+					if ltssmState == "" {
+						errorItems = append(errorItems, "devicePortList_ltssmState")
+						continue
+					}
+
+					labels := prometheus.Labels{
+						"fabric_id":          fabricID,
+						"switch_id":          switchID,
+						"switch_port_number": switchPortNumber,
+					}
+
+					var ltssmStateValue float64
+					switch ltssmState {
+					case model.LtssmStateL0:
+						ltssmStateValue = model.LtssmStateL0Value
+					default:
+						ltssmStateValue = model.LtssmStateOtherValue
+					}
+
+					m.devicePortListLtssmStateL0.With(labels).Set(ltssmStateValue)
+				}
 			}
 		} else {
-			errorItems = append(errorItems, "LTSSMState")
+			errorItems = append(errorItems, "devicePortList")
 		}
 	}
 
@@ -642,6 +683,7 @@ func loadNetworkInterfaceConfig(filepath string, settings *model.NetworkInterfac
 
 // Create Prometheus metrics from the HW control metric information and networkInterface metric acquisition settings, and return them to Prometheus
 func NetworkInterfaceMetricsHandler(context *gin.Context, hwOutput *model.HwOutput) {
+	namespaceNetworkInterface = hwOutput.HwMetrics["type"].(string)
 	settings := model.NetworkInterfaceConfig{}
 
 	readErr := loadNetworkInterfaceConfig(networkInterfaceYamlFilePath, &settings)

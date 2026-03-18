@@ -1,16 +1,16 @@
 # The value of each property: true to retrieve, false not to retrieve
-volumeCapacity: 
-  data: 
+volumeCapacity:
+  data:
     allocatedBytes: false
     consumedBytes: false
     guaranteedBytes: false
     provisionedBytes: false
-  metadata: 
+  metadata:
     allocatedBytes: false
     consumedBytes: false
     guaranteedBytes: false
     provisionedBytes: false
-  snapshot: 
+  snapshot:
     allocatedBytes: false
     consumedBytes: false
     guaranteedBytes: false
@@ -22,7 +22,8 @@ status:
   health: true
 powerState: true
 powerCapability: true
-LTSSMState: true
+devicePortList:
+  LTSSMState: true
 disk:
   amountUsedDisk: false
   usageIO:

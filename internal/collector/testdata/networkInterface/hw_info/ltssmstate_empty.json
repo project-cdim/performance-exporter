@@ -1,0 +1,65 @@
+{
+  "deviceID": "1001",
+  "enabled": true,
+  "infoTimestamp": "2023-10-20T07:15:39Z",
+  "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "",
+            "switchID": "2",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        }
+    ],
+  "metricEnergyJoules": {
+    "reading": 239,
+    "readingTime": "2023-02-13T04:14:00Z",
+    "sensingInterval": 599,
+    "sensorResetTime": "2020-06-03T04:14:00Z"
+  },
+  "networkInterfaceInformation": {
+    "FQDN": "hostname.local",
+    "hostname": "hostname",
+    "interfaceCount": 2,
+    "interfaces": [
+      {
+        "description": "Network Interface 1",
+        "name": "eth0"
+      },
+      {
+        "description": "Network Interface 2",
+        "name": "eth1"
+      }
+    ]
+  },
+  "networkSpeeds": [
+    {
+      "linkSpeedMbps": 1000,
+      "duplex": "Full",
+      "ethernetInterfaceType": "BaseT",
+      "linkStatus": "LinkUp",
+      "interfaceName": "eth0"
+    },
+    {
+      "linkSpeedMbps": 100,
+      "duplex": "Full",
+      "ethernetInterfaceType": "BaseT",
+      "linkStatus": "LinkUp",
+      "interfaceName": "eth1"
+    }
+  ],
+  "networkTraffic": {
+    "bytesReceived": 11579324,
+    "bytesSent": 3452341,
+    "packetsReceived": 23453,
+    "packetsSent": 8765
+  },
+  "powerCapability": true,
+  "powerState": "On",
+  "status": {
+    "health": "OK",
+    "state": "Enabled"
+  },
+  "type": "networkInterface",
+  "usageRate": 34
+}

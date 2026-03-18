@@ -1,17 +1,17 @@
-// Copyright (C) 2025 NEC Corporation.
-// 
+// Copyright (C) 2025-2026 NEC Corporation.
+//
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-        
+
 package service
 
 import (
@@ -51,7 +51,15 @@ func TimeStr2Float(target map[string]any, item string) (float64, bool) {
 	return float64(0), false
 }
 
+// CreateErroeMessage creates an error with a standardized message format for data type mismatch.
 func CreateErroeMessage(item string) error {
 	msg := "Data type differs from expected. [items : " + item + "]"
 	return ErrorNew(http.StatusInternalServerError, "0050", msg)
+}
+
+// GetStringValue returns the string value for the given key from data map.
+// It returns an empty string if the key does not exist or the value is not a string.
+func GetStringValue(data map[string]any, key string) string {
+	value, _ := data[key].(string)
+	return value
 }

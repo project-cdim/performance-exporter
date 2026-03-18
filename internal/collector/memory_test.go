@@ -1,4 +1,4 @@
-// Copyright (C) 2025 NEC Corporation.
+// Copyright (C) 2025-2026 NEC Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/project-cdim/performance-exporter/internal/model"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
@@ -44,6 +45,41 @@ func createMemoryMetrics(hwOutput model.HwOutput, yamlContent model.MemoryConfig
 	reg := prometheus.NewRegistry()
 	m, _ := NewMemoryMetrics(reg, &hwOutput, &yamlContent)
 	return m
+}
+
+func createMemoryMetricsWithRegistry(hwOutput model.HwOutput, yamlContent model.MemoryConfig) (*memoryMetrics, *prometheus.Registry) {
+	reg := prometheus.NewRegistry()
+	m, _ := NewMemoryMetrics(reg, &hwOutput, &yamlContent)
+	return m, reg
+}
+
+func setMemoryConfigAllValue(value bool) model.MemoryConfig {
+	settings := model.MemoryConfig{}
+	settings.Enabled = value
+	settings.Status.State = value
+	settings.Status.Health = value
+	settings.PowerState = value
+	settings.PowerCapability = value
+	settings.DevicePortList.LTSSMState = value
+	settings.CXLCapacity.Volatile = value
+	settings.CXLCapacity.Persistent = value
+	settings.CXLCapacity.Total = value
+	settings.UsedMemory = value
+	settings.Swap = value
+	settings.MetricBandwidthPercent = value
+	settings.MetricBlockSizeBytes = value
+	settings.MetricOperatingSpeedMHz = value
+
+	settings.MetricHealthData.DataLossDetected = value
+	settings.MetricHealthData.LastShutdownSuccess = value
+	settings.MetricHealthData.PerformanceDegraded = value
+	settings.MetricHealthData.PredictedMediaLifeLeftPercent = value
+
+	settings.MetricEnergyJoules.Reading = value
+	settings.MetricEnergyJoules.ReadingTime = value
+	settings.MetricEnergyJoules.SensingInterval = value
+	settings.MetricEnergyJoules.SensorResetTime = value
+	return settings
 }
 
 func TestNewMemoryMetrics(t *testing.T) {
@@ -420,31 +456,279 @@ func TestMemoryMetricsHandler(t *testing.T) {
 	}
 }
 
-func setMemoryConfigAllValue(value bool) model.MemoryConfig {
-	settings := model.MemoryConfig{}
-	settings.Enabled = value
-	settings.Status.State = value
-	settings.Status.Health = value
-	settings.PowerState = value
-	settings.PowerCapability = value
-	settings.LtssmState = value
-	settings.CXLCapacity.Volatile = value
-	settings.CXLCapacity.Persistent = value
-	settings.CXLCapacity.Total = value
-	settings.UsedMemory = value
-	settings.Swap = value
-	settings.MetricBandwidthPercent = value
-	settings.MetricBlockSizeBytes = value
-	settings.MetricOperatingSpeedMHz = value
+func Test_setMemoryMetrics_Values(t *testing.T) {
+	const settingsPath = "testdata/memory/settings/"
+	const hwInfoPath = "testdata/memory/hw_info/"
 
-	settings.MetricHealthData.DataLossDetected = value
-	settings.MetricHealthData.LastShutdownSuccess = value
-	settings.MetricHealthData.PerformanceDegraded = value
-	settings.MetricHealthData.PredictedMediaLifeLeftPercent = value
+	t.Run("LTSSMState L0 should set value 1", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "normal.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
 
-	settings.MetricEnergyJoules.Reading = value
-	settings.MetricEnergyJoules.ReadingTime = value
-	settings.MetricEnergyJoules.SensingInterval = value
-	settings.MetricEnergyJoules.SensorResetTime = value
-	return settings
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.NotEmpty(t, fabricId, "fabric_id label should not be empty")
+					assert.NotEmpty(t, switchId, "switch_id label should not be empty")
+					assert.NotEmpty(t, switchPortNumber, "switch_port_number label should not be empty")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			} else {
+				fmt.Printf("Other metric: %s\n", gather.GetName())
+			}
+		}
+	})
+}
+
+func Test_setMemoryMetrics_SwitchPortNumber(t *testing.T) {
+	const settingsPath = "testdata/memory/settings/"
+	const hwInfoPath = "testdata/memory/hw_info/"
+
+	t.Run("multiple switchPortNumber normal values should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "normal.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				// normal.json has multiple devicePortList entries for testing
+				assert.Greater(t, len(gather.GetMetric()), 0, "Should have at least one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					assert.NotEmpty(t, fabricId, "fabric_id label should not be empty")
+					assert.NotEmpty(t, switchId, "switch_id label should not be empty")
+					// switchPortNumber is optional, so not validated in this test
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+
+	t.Run("switchPortNumber empty string should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchport_empty.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.Equal(t, "1", fabricId, "fabric_id should be 1")
+					assert.Equal(t, "fmsw-01", switchId, "switch_id should be fmsw-01")
+					assert.Equal(t, "", switchPortNumber, "switch_port_number should be empty string")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+
+	t.Run("switchPortNumber missing field should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchport_missing.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.Equal(t, "1", fabricId, "fabric_id should be 1")
+					assert.Equal(t, "fmsw-01", switchId, "switch_id should be fmsw-01")
+					assert.Equal(t, "", switchPortNumber, "switch_port_number should be empty string when field is missing")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+}
+
+func Test_setMemoryMetrics_ErrorHandling(t *testing.T) {
+	const settingsPath = "testdata/memory/settings/"
+	const hwInfoPath = "testdata/memory/hw_info/"
+
+	t.Run("switchID empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchid_empty.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when switchID is empty")
+		assert.Contains(t, err.Error(), "devicePortList_switchID", "Error message should contain devicePortList_switchID")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when switchID is empty")
+			}
+		}
+	})
+
+	t.Run("LTSSMState empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "ltssmstate_empty.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when LTSSMState is empty")
+		assert.Contains(t, err.Error(), "devicePortList_ltssmState", "Error message should contain devicePortList_ltssmState")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when LTSSMState is empty")
+			}
+		}
+	})
+
+	t.Run("fabricID empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "fabricid_empty.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when fabricID is empty")
+		assert.Contains(t, err.Error(), "devicePortList_fabricID", "Error message should contain devicePortList_fabricID")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when fabricID is empty")
+			}
+		}
+	})
+}
+
+func Test_setMemoryMetrics_LTSSMStateValues(t *testing.T) {
+	const settingsPath = "testdata/memory/settings/"
+	const hwInfoPath = "testdata/memory/hw_info/"
+
+	t.Run("LTSSMState non-L0 should set value 0", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "ltssmstate_l1.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 0.0, actualValue, "LTSSMState non-L0 should be 0")
+				}
+			}
+		}
+	})
+}
+
+func Test_setMemoryMetrics_BoundaryValues(t *testing.T) {
+	const settingsPath = "testdata/memory/settings/"
+	const hwInfoPath = "testdata/memory/hw_info/"
+
+	t.Run("empty devicePortList should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "deviceportlist_empty.json")
+		settings := setMemoryConfig(settingsPath + "normal.yaml")
+		m, gatherer := createMemoryMetricsWithRegistry(hwOutput, settings)
+
+		err := setMemoryMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics are generated for empty array
+		for _, gather := range gathers {
+			if gather.GetName() == "memory_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics for empty devicePortList")
+			}
+		}
+	})
 }

@@ -1,17 +1,17 @@
-// Copyright (C) 2025 NEC Corporation.
-// 
+// Copyright (C) 2025-2026 NEC Corporation.
+//
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
-        
+
 package collector
 
 import (
@@ -46,12 +46,12 @@ type memoryMetrics struct {
 	// type is not registered as a metric because it uses the namespace
 	// attribute is not registered as a metric because it is a fixed value
 
-	enabledTrue         prometheus.Gauge
-	statusStateEnabled  prometheus.Gauge
-	statusHealthOk      prometheus.Gauge
-	powerStateOn        prometheus.Gauge
-	powerCapabilityTrue prometheus.Gauge
-	ltssmStateL0        prometheus.Gauge
+	enabledTrue                prometheus.Gauge
+	statusStateEnabled         prometheus.Gauge
+	statusHealthOk             prometheus.Gauge
+	powerStateOn               prometheus.Gauge
+	powerCapabilityTrue        prometheus.Gauge
+	devicePortListLtssmStateL0 *prometheus.GaugeVec
 
 	cxlCapacityVolatile     prometheus.Gauge
 	cxlCapacityPersistent   prometheus.Gauge
@@ -111,12 +111,13 @@ func NewMemoryMetrics(reg prometheus.Registerer, hwOutput *model.HwOutput, setti
 			Help:        "Whether power control function is enabled.",
 			ConstLabels: prometheus.Labels{"value": "true"},
 		}),
-		ltssmStateL0: prometheus.NewGauge(prometheus.GaugeOpts{
+
+		devicePortListLtssmStateL0: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace:   model.Memory,
-			Name:        "LTSSMState",
+			Name:        "devicePortList_LTSSMState",
 			Help:        "CXL device link state",
 			ConstLabels: prometheus.Labels{"value": "L0"},
-		}),
+		}, []string{"fabric_id", "switch_id", "switch_port_number"}),
 
 		cxlCapacityVolatile: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: model.Memory,
@@ -233,8 +234,9 @@ func NewMemoryMetrics(reg prometheus.Registerer, hwOutput *model.HwOutput, setti
 	if settings.PowerCapability && service.IsExistValue(hwOutput.HwMetrics, "powerCapability") {
 		reg.MustRegister(m.powerCapabilityTrue)
 	}
-	if settings.LtssmState && service.IsExistValue(hwOutput.HwMetrics, "LTSSMState") {
-		reg.MustRegister(m.ltssmStateL0)
+
+	if settings.DevicePortList.LTSSMState && service.IsExistValue(hwOutput.HwMetrics, "devicePortList") {
+		reg.MustRegister(m.devicePortListLtssmStateL0)
 	}
 
 	if service.IsExistValue(hwOutput.HwMetrics, "CXLCapacity") {
@@ -383,16 +385,53 @@ func setMemoryMetrics(m *memoryMetrics, hwOutput *model.HwOutput, settings *mode
 			errorItems = append(errorItems, "powerCapability")
 		}
 	}
-	if settings.LtssmState && service.IsExistValue(hwOutput.HwMetrics, "LTSSMState") {
-		if ltssmState, ok := hwOutput.HwMetrics["LTSSMState"].(string); ok {
-			switch ltssmState {
-			case model.LtssmStateL0:
-				m.ltssmStateL0.Set(model.LtssmStateL0Value)
-			default:
-				m.ltssmStateL0.Set(model.LtssmStateOtherValue)
+
+	if settings.DevicePortList.LTSSMState && service.IsExistValue(hwOutput.HwMetrics, "devicePortList") {
+		if devicePortListRaw, ok := hwOutput.HwMetrics["devicePortList"].([]any); ok {
+			for _, portDataRaw := range devicePortListRaw {
+				if portDataMap, ok := portDataRaw.(map[string]any); ok {
+					fabricID := service.GetStringValue(portDataMap, "fabricID")
+					switchID := service.GetStringValue(portDataMap, "switchID")
+					switchPortNumber := service.GetStringValue(portDataMap, "switchPortNumber")
+					ltssmState := service.GetStringValue(portDataMap, "LTSSMState")
+
+					if fabricID == "" {
+						errorItems = append(errorItems, "devicePortList_fabricID")
+						continue
+					}
+
+					if switchID == "" {
+						errorItems = append(errorItems, "devicePortList_switchID")
+						continue
+					}
+
+					// switchPortNumber is processed as empty string even if it doesn't exist or is empty
+					// Continue without error
+
+					if ltssmState == "" {
+						errorItems = append(errorItems, "devicePortList_ltssmState")
+						continue
+					}
+
+					labels := prometheus.Labels{
+						"fabric_id":          fabricID,
+						"switch_id":          switchID,
+						"switch_port_number": switchPortNumber,
+					}
+
+					var ltssmStateValue float64
+					switch ltssmState {
+					case model.LtssmStateL0:
+						ltssmStateValue = model.LtssmStateL0Value
+					default:
+						ltssmStateValue = model.LtssmStateOtherValue
+					}
+
+					m.devicePortListLtssmStateL0.With(labels).Set(ltssmStateValue)
+				}
 			}
 		} else {
-			errorItems = append(errorItems, "LTSSMState")
+			errorItems = append(errorItems, "devicePortList")
 		}
 	}
 

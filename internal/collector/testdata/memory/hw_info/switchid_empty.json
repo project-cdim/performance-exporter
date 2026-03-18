@@ -1,0 +1,43 @@
+{
+  "deviceID": "1001",
+  "CXLCapacity": {
+    "volatile": 1073741824,
+    "persistent": 0,
+    "total": 1073741824
+  },
+  "enabled": true,
+  "infoTimestamp": "2023-10-20T07:15:39Z",
+  "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "L0",
+            "switchID": "",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        }
+    ],
+  "metricBandwidthPercent": 2,
+  "metricBlockSizeBytes": 4067,
+  "metricEnergyJoules": {
+    "reading": 239,
+    "readingTime": "2023-02-13T04:14:00Z",
+    "sensingInterval": 599,
+    "sensorResetTime": "2020-06-03T04:14:00Z"
+  },
+  "metricHealthData": {
+    "dataLossDetected": false,
+    "lastShutdownSuccess": true,
+    "performanceDegraded": false,
+    "predictedMediaLifeLeftPercent": 39
+  },
+  "metricOperatingSpeedMHz": 2301,
+  "powerCapability": true,
+  "powerState": "On",
+  "status": {
+    "health": "OK",
+    "state": "Enabled"
+  },
+  "swap": 522533541,
+  "type": "memory",
+  "usedMemory": 584265192
+}

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 NEC Corporation.
+// Copyright (C) 2025-2026 NEC Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
@@ -158,6 +158,74 @@ func TestTimeStr2Float(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("GetTime2FloatValue() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestGetStringValue(t *testing.T) {
+	normalData := map[string]any{
+		"stringKey": "test_value",
+		"emptyKey":  "",
+		"intKey":    123,
+		"nilKey":    nil,
+	}
+
+	type args struct {
+		data map[string]any
+		key  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"Normal case: Key exists and value is string",
+			args{
+				normalData,
+				"stringKey",
+			},
+			"test_value",
+		},
+		{
+			"Normal case: Key exists and value is empty string",
+			args{
+				normalData,
+				"emptyKey",
+			},
+			"",
+		},
+		{
+			"Normal case: Key exists but value is not string",
+			args{
+				normalData,
+				"intKey",
+			},
+			"",
+		},
+		{
+			"Normal case: Key exists but value is nil",
+			args{
+				normalData,
+				"nilKey",
+			},
+			"",
+		},
+		{
+			"Normal case: Key does not exist",
+			args{
+				normalData,
+				"nonexistent",
+			},
+			"",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetStringValue(tt.args.data, tt.args.key)
+			if got != tt.want {
+				t.Errorf("GetStringValue() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -1,0 +1,41 @@
+{
+    "deviceID": "0001",
+    "idle": 56.4,
+    "CPUWatts": 428,
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-01",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        }
+    ],
+    "metricBandwidthPercent": 56.6,
+    "metricOperatingSpeedMHz": 2400,
+    "metricLocalMemoryBandwidthBytes": 1073741824,
+    "metricRemoteMemoryBandwidthBytes": 2147483648,
+    "metricEnergyJoules": {
+        "reading": 123.45,
+        "readingTime": "2023-10-20T07:15:39Z",
+        "sensorResetTime": "2023-10-20T07:00:00Z",
+        "sensingInterval": 60
+    },
+    "powerCapability": true,
+    "powerState": "On",
+    "status": {
+        "health": "OK",
+        "state": "Enabled"
+    },
+    "system": 4.7,
+    "turbostat": {
+        "Avg_MHz": 2199,
+        "Busy%": 43.61,
+        "Bzy_MHz": 2199,
+        "TSC_MHz": 2194
+    },
+    "usageRate": 29.99,
+    "user": 38.9,
+    "wait": 98
+}

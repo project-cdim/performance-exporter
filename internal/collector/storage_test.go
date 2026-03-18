@@ -1,4 +1,4 @@
-// Copyright (C) 2025 NEC Corporation.
+// Copyright (C) 2025-2026 NEC Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain
@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/project-cdim/performance-exporter/internal/model"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
@@ -44,6 +45,50 @@ func createStorageMetrics(hwOutput model.HwOutput, yamlContent model.StorageConf
 	reg := prometheus.NewRegistry()
 	m, _ := NewStorageMetrics(reg, &hwOutput, &yamlContent)
 	return m
+}
+
+func createStorageMetricsWithRegistry(hwOutput model.HwOutput, yamlContent model.StorageConfig) (*storageMetrics, *prometheus.Registry) {
+	reg := prometheus.NewRegistry()
+	m, _ := NewStorageMetrics(reg, &hwOutput, &yamlContent)
+	return m, reg
+}
+
+func setStorageConfigAllValue(value bool) model.StorageConfig {
+	settings := model.StorageConfig{}
+	settings.VolumeCapacity.Data.AllocatedBytes = value
+	settings.VolumeCapacity.Data.ConsumedBytes = value
+	settings.VolumeCapacity.Data.GuaranteedBytes = value
+	settings.VolumeCapacity.Data.ProvisionedBytes = value
+	settings.VolumeCapacity.Metadata.AllocatedBytes = value
+	settings.VolumeCapacity.Metadata.ConsumedBytes = value
+	settings.VolumeCapacity.Metadata.GuaranteedBytes = value
+	settings.VolumeCapacity.Metadata.ProvisionedBytes = value
+	settings.VolumeCapacity.Snapshot.AllocatedBytes = value
+	settings.VolumeCapacity.Snapshot.ConsumedBytes = value
+	settings.VolumeCapacity.Snapshot.GuaranteedBytes = value
+	settings.VolumeCapacity.Snapshot.ProvisionedBytes = value
+	settings.VolumeRemainingCapacityPercent = value
+	settings.DriveNegotiatedSpeedGbs = value
+	settings.Status.State = value
+	settings.Status.Health = value
+	settings.PowerState = value
+	settings.PowerCapability = value
+	settings.DevicePortList.LTSSMState = value
+	settings.Disk.AmountUsedDisk = value
+	settings.Disk.UsageIO.ReadCount = value
+	settings.Disk.UsageIO.WriteCount = value
+	settings.Disk.UsageIO.ReadBytes = value
+	settings.Disk.UsageIO.WriteBytes = value
+	settings.Disk.UsageIO.ReadTime = value
+	settings.Disk.UsageIO.WriteTime = value
+	settings.Disk.UsageIO.ReadMergedCount = value
+	settings.Disk.UsageIO.WriteMergedCount = value
+	settings.Disk.UsageIO.BusyRate = value
+	settings.MetricEnergyJoules.Reading = value
+	settings.MetricEnergyJoules.ReadingTime = value
+	settings.MetricEnergyJoules.SensingInterval = value
+	settings.MetricEnergyJoules.SensorResetTime = value
+	return settings
 }
 
 func TestNewStorageMetrics(t *testing.T) {
@@ -540,46 +585,280 @@ func TestStorageMetricsHandler(t *testing.T) {
 	}
 }
 
-func setStorageConfigAllValue(value bool) model.StorageConfig {
-	settings := model.StorageConfig{}
-	settings.VolumeCapacity.Data.AllocatedBytes = value
-	settings.VolumeCapacity.Data.ConsumedBytes = value
-	settings.VolumeCapacity.Data.GuaranteedBytes = value
-	settings.VolumeCapacity.Data.ProvisionedBytes = value
+func Test_setStorageMetrics_Values(t *testing.T) {
+	const settingsPath = "testdata/storage/settings/"
+	const hwInfoPath = "testdata/storage/hw_info/"
 
-	settings.VolumeCapacity.Metadata.AllocatedBytes = value
-	settings.VolumeCapacity.Metadata.ConsumedBytes = value
-	settings.VolumeCapacity.Metadata.GuaranteedBytes = value
-	settings.VolumeCapacity.Metadata.ProvisionedBytes = value
+	t.Run("LTSSMState L0 should set value 1", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "normal.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
 
-	settings.VolumeCapacity.Snapshot.AllocatedBytes = value
-	settings.VolumeCapacity.Snapshot.ConsumedBytes = value
-	settings.VolumeCapacity.Snapshot.GuaranteedBytes = value
-	settings.VolumeCapacity.Snapshot.ProvisionedBytes = value
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
 
-	settings.VolumeRemainingCapacityPercent = value
-	settings.DriveNegotiatedSpeedGbs = value
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
 
-	settings.Status.State = value
-	settings.Status.Health = value
-	settings.PowerState = value
-	settings.PowerCapability = value
-	settings.LtssmState = value
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
 
-	settings.Disk.AmountUsedDisk = value
-	settings.Disk.UsageIO.ReadCount = value
-	settings.Disk.UsageIO.WriteCount = value
-	settings.Disk.UsageIO.ReadBytes = value
-	settings.Disk.UsageIO.WriteBytes = value
-	settings.Disk.UsageIO.ReadTime = value
-	settings.Disk.UsageIO.WriteTime = value
-	settings.Disk.UsageIO.ReadMergedCount = value
-	settings.Disk.UsageIO.WriteMergedCount = value
-	settings.Disk.UsageIO.BusyRate = value
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.NotEmpty(t, fabricId, "fabric_id label should not be empty")
+					assert.NotEmpty(t, switchId, "switch_id label should not be empty")
+					assert.NotEmpty(t, switchPortNumber, "switch_port_number label should not be empty")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			} else {
+				fmt.Printf("Other metric: %s\n", gather.GetName())
+			}
+		}
+	})
+}
 
-	settings.MetricEnergyJoules.Reading = value
-	settings.MetricEnergyJoules.ReadingTime = value
-	settings.MetricEnergyJoules.SensingInterval = value
-	settings.MetricEnergyJoules.SensorResetTime = value
-	return settings
+func Test_setStorageMetrics_SwitchPortNumber(t *testing.T) {
+	const settingsPath = "testdata/storage/settings/"
+	const hwInfoPath = "testdata/storage/hw_info/"
+
+	t.Run("multiple switchPortNumber normal values should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "normal.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				// normal.json has multiple devicePortList entries for testing
+				assert.Greater(t, len(gather.GetMetric()), 0, "Should have at least one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					assert.NotEmpty(t, fabricId, "fabric_id label should not be empty")
+					assert.NotEmpty(t, switchId, "switch_id label should not be empty")
+					// switchPortNumber is optional, so not validated in this test
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+
+	t.Run("switchPortNumber empty string should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchport_empty.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.Equal(t, "1", fabricId, "fabric_id should be 1")
+					assert.Equal(t, "fmsw-01", switchId, "switch_id should be fmsw-01")
+					assert.Equal(t, "", switchPortNumber, "switch_port_number should be empty string")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+
+	t.Run("switchPortNumber missing field should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchport_missing.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					labelPairs := metric.GetLabel()
+					labels := make(map[string]string)
+					for _, label := range labelPairs {
+						labels[label.GetName()] = label.GetValue()
+					}
+					fabricId := labels["fabric_id"]
+					switchId := labels["switch_id"]
+					switchPortNumber := labels["switch_port_number"]
+					assert.Equal(t, "1", fabricId, "fabric_id should be 1")
+					assert.Equal(t, "fmsw-01", switchId, "switch_id should be fmsw-01")
+					assert.Equal(t, "", switchPortNumber, "switch_port_number should be empty string when field is missing")
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 1.0, actualValue, "LTSSMState should be 1")
+				}
+			}
+		}
+	})
+}
+
+func Test_setStorageMetrics_ErrorHandling(t *testing.T) {
+	const settingsPath = "testdata/storage/settings/"
+	const hwInfoPath = "testdata/storage/hw_info/"
+
+	t.Run("switchID empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "switchid_empty.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when switchID is empty")
+		assert.Contains(t, err.Error(), "devicePortList_switchID", "Error message should contain devicePortList_switchID")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when switchID is empty")
+			}
+		}
+	})
+
+	t.Run("LTSSMState empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "ltssmstate_empty.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when LTSSMState is empty")
+		assert.Contains(t, err.Error(), "devicePortList_ltssmState", "Error message should contain devicePortList_ltssmState")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when LTSSMState is empty")
+			}
+		}
+	})
+
+	t.Run("fabricID empty should skip processing and return error", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "fabricid_empty.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.Error(t, err, "Should return error when fabricID is empty")
+		assert.Contains(t, err.Error(), "devicePortList_fabricID", "Error message should contain devicePortList_fabricID")
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics should be generated
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics when fabricID is empty")
+			}
+		}
+	})
+}
+
+func Test_setStorageMetrics_LTSSMStateValues(t *testing.T) {
+	const settingsPath = "testdata/storage/settings/"
+	const hwInfoPath = "testdata/storage/hw_info/"
+
+	t.Run("LTSSMState non-L0 should set value 0", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "ltssmstate_l1.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 1, "Should have one metric")
+				for _, metric := range gather.GetMetric() {
+					actualValue := metric.GetGauge().GetValue()
+					assert.Equal(t, 0.0, actualValue, "LTSSMState non-L0 should be 0")
+				}
+			}
+		}
+	})
+}
+
+func Test_setStorageMetrics_BoundaryValues(t *testing.T) {
+	const settingsPath = "testdata/storage/settings/"
+	const hwInfoPath = "testdata/storage/hw_info/"
+
+	t.Run("empty devicePortList should work", func(t *testing.T) {
+		hwOutput := setHwMetric(hwInfoPath + "deviceportlist_empty.json")
+		settings := setStorageConfig(settingsPath + "normal.yaml")
+		m, gatherer := createStorageMetricsWithRegistry(hwOutput, settings)
+
+		err := setStorageMetrics(m, &hwOutput, &settings)
+		assert.NoError(t, err)
+
+		gathers, err := gatherer.Gather()
+		if err != nil {
+			t.Fatalf("Failed to gather metrics: %v", err)
+		}
+
+		// No metrics are generated for empty array
+		for _, gather := range gathers {
+			if gather.GetName() == "storage_devicePortList_LTSSMState" {
+				assert.Len(t, gather.GetMetric(), 0, "Should have no metrics for empty devicePortList")
+			}
+		}
+	})
 }

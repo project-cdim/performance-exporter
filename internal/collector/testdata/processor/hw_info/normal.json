@@ -3,7 +3,22 @@
     "idle": 56.4,
     "CPUWatts": 428,
     "infoTimestamp": "2023-10-20T07:15:39Z",
-    "LTSSMState": "L0",
+    "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-01",
+            "switchPortNumber": "1",
+            "switchPortType": "USP"
+        },
+        {
+            "fabricID": "2",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-02",
+            "switchPortNumber": "2",
+            "switchPortType": "USP"
+        }
+    ],
     "metricBandwidthPercent": 56.6,
     "metricCash": [
         {

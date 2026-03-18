@@ -4,7 +4,9 @@ status:
   health: false
 powerState: false
 powerCapability: false
-LTSSMState: false
+# LTSSMState: false
+devicePortList:
+  LTSSMState: false
 usageRate: false
 user: false
 system: false

@@ -1,0 +1,61 @@
+{
+    "deviceID": "2001",
+    "disk": {
+        "amountUsedDisk": 11206075840,
+        "usageIO": {
+            "busyRate": 37,
+            "readBytes": 3594477492,
+            "readCount": 50142,
+            "readMergedCount": 6623,
+            "readTime": 55394070,
+            "writeBytes": 35740420677,
+            "writeCount": 4342265,
+            "writeMergedCount": 44609,
+            "writeTime": 11639300
+        }
+    },
+    "driveNegotiatedSpeedGbs": 11,
+    "infoTimestamp": "2023-10-20T07:15:39Z",
+    "devicePortList": [
+        {
+            "fabricID": "1",
+            "LTSSMState": "L0",
+            "switchID": "fmsw-01",
+            "switchPortType": "USP"
+        }
+    ],
+    "metricEnergyJoules": {
+        "reading": 233,
+        "readingTime": "2023-02-13T04:14:00Z",
+        "sensingInterval": 546,
+        "sensorResetTime": "2020-06-03T04:14:00Z"
+    },
+    "powerCapability": true,
+    "powerState": "On",
+    "status": {
+        "health": "OK",
+        "state": "Enabled"
+    },
+    "type": "storage",
+    "volumeCapacity": {
+        "data": {
+            "allocatedBytes": 2,
+            "consumedBytes": 3,
+            "guaranteedBytes": 4,
+            "provisionedBytes": 5
+        },
+        "metadata": {
+            "allocatedBytes": 2,
+            "consumedBytes": 3,
+            "guaranteedBytes": 4,
+            "provisionedBytes": 5
+        },
+        "snapshot": {
+            "allocatedBytes": 2,
+            "consumedBytes": 3,
+            "guaranteedBytes": 4,
+            "provisionedBytes": 5
+        }
+    },
+    "volumeRemainingCapacityPercent": 78
+}

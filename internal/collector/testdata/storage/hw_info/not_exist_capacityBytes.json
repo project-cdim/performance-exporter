@@ -30,7 +30,6 @@
         "state": "Enabled"
     },
     "type": "storage",
-    "volumeCapacity": {
-    },
+    "volumeCapacity": {},
     "volumeRemainingCapacityPercent": 34
 }

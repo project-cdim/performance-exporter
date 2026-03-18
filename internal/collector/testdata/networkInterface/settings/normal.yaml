@@ -5,7 +5,8 @@ status:
   health: true
 powerState: true
 powerCapability: true
-LTSSMState: true
+devicePortList:
+  LTSSMState: true
 networkInterfaceInformation:
   networkSpeed: true
   networkTraffic:
@@ -31,4 +32,3 @@ metricEnergyJoules:
   sensingInterval: true
   readingTime: true
   reading: true
-
